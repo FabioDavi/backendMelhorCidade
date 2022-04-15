@@ -8,7 +8,6 @@
   "license": "MIT",
   "scripts": {
     "dev": "ts-node-dev -r dotenv/config ./src/server.ts",
-    "build": "tsc",
     "start": "node -r dotenv/config ./dist/server.js"
   },
   "devDependencies": {
