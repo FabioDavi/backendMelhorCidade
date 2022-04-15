@@ -8,6 +8,7 @@ const app = (0, express_1.default)();
 app.get('/', function (req, res) {
     res.send('Hello World!');
 });
-app.listen(3000, () => {
-    console.log(`server running port 3000 for project: ${process.env.PROJECT_NAME}`);
+const porta = process.env.PORT || 5000;
+app.listen(porta, () => {
+    console.log(`server running port ${porta} for project: ${process.env.PROJECT_NAME}`);
 });
