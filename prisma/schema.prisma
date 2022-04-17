@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model tbl_business {
+  business_id           Int                     @id @default(autoincrement())
+  category_sub_id       Int
+  log_id                Int
+  business_name         String                  @db.VarChar(115)
+  business_doc          String?                 @db.VarChar(45)
+  business_url          String?                 @db.VarChar(155)
+  business_url_type     String?                 @db.VarChar(45)
+  business_description  String?                 @db.VarChar(800)
+  business_logo         String?                 @db.VarChar(115)
+  business_img          String?                 @db.VarChar(115)
+  business_under_review Boolean?                @default(dbgenerated("b'1'")) @db.Bit(1)
+  business_index        Int?                    @default(0)
+  business_active       Boolean?                @default(dbgenerated("b'0'")) @db.Bit(1)
+  tbl_categories_sub    tbl_categories_sub      @relation(fields: [category_sub_id], references: [category_sub_id], onDelete: NoAction, onUpdate: NoAction, map: "FK business X categories sub")
+  tbl_local_ruas        tbl_local_ruas          @relation(fields: [log_id], references: [log_id], onDelete: NoAction, onUpdate: NoAction, map: "FK business X local")
+  tbl_business_services tbl_business_services[]
+  tbl_business_x_tags   tbl_business_x_tags[]
+
+  @@index([log_id], map: "FK business X local_idx")
+  @@index([category_sub_id], map: "ds_idx")
+}
+
+model tbl_business_services {
+  business_serv_id          Int          @id @default(autoincrement())
+  business_id               Int
+  business_serv_description String?      @db.VarChar(300)
+  business_serv_img_g       String?      @db.VarChar(115)
+  business_serv_active      Boolean      @default(dbgenerated("b'1'")) @map("business_serv-active") @db.Bit(1)
+  tbl_business              tbl_business @relation(fields: [business_id], references: [business_id], onDelete: NoAction, onUpdate: NoAction, map: "FkBusinessService")
+
+  @@index([business_id], map: "FkBusinessService_idx")
+}
+
+model tbl_business_x_tags {
+  id_businesstag Int          @id @default(autoincrement())
+  business_id    Int
+  tag_id         Int
+  tbl_business   tbl_business @relation(fields: [business_id], references: [business_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_business id")
+  tbl_tags       tbl_tags     @relation(fields: [tag_id], references: [tag_id], onDelete: NoAction, onUpdate: NoAction, map: "FK  business tag id")
+
+  @@index([tag_id], map: "FK  business tag id_idx")
+  @@index([business_id], map: "FK_business id_idx")
+}
+
+model tbl_categories {
+  category_id          Int                  @id @default(autoincrement())
+  category_name        String               @db.VarChar(45)
+  category_description String?              @db.VarChar(555)
+  category_img_g       String?              @db.VarChar(115)
+  category_img_p       String?              @db.VarChar(115)
+  category_index       Int                  @default(0)
+  category_active      Boolean              @default(dbgenerated("b'1'")) @db.Bit(1)
+  tbl_categories_sub   tbl_categories_sub[]
+
+  @@index([category_name], map: "buscaNome")
+  @@index([category_name], map: "buscaNome desc")
+}
+
+model tbl_categories_sub {
+  category_sub_id          Int            @id @default(autoincrement())
+  category_id              Int
+  category_sub_name        String         @db.VarChar(115)
+  category_sub_description String?        @db.VarChar(545)
+  category_sub_img_p       String?        @db.VarChar(155)
+  category_sub_img_g       String?        @db.VarChar(155)
+  category_sub_index       Int            @default(0)
+  category_sub_active      Boolean        @default(dbgenerated("b'1'")) @db.Bit(1)
+  tbl_categories           tbl_categories @relation(fields: [category_id], references: [category_id], onDelete: NoAction, onUpdate: NoAction, map: "FK category sub X category")
+  tbl_business             tbl_business[]
+
+  @@index([category_id], map: "FK category sub X category_idx")
+}
+
+model tbl_local_bairros {
+  bairro_id         Int                @id @default(autoincrement())
+  cidade_id         Int?
+  bairro_descricao  String?            @db.VarChar(72)
+  bairro_active     Boolean?           @default(dbgenerated("b'1'")) @db.Bit(1)
+  tbl_local_cidades tbl_local_cidades? @relation(fields: [cidade_id], references: [cidade_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_bairroXcidade")
+  tbl_local_ruas    tbl_local_ruas[]
+
+  @@index([cidade_id], map: "FK_bairroXcidade_idx")
+  @@index([bairro_descricao], map: "index nome asc")
+  @@index([bairro_descricao], map: "index nome desc")
+}
+
+model tbl_local_cidades {
+  cidade_id         Int                 @id @default(0)
+  uf_id             Int?                @db.UnsignedInt
+  cidade_descricao  String?             @db.VarChar(72)
+  cidade_cep        String?             @db.VarChar(8)
+  cidade_ibge_code  String?             @db.VarChar(45)
+  cidade_uf_        String?             @db.VarChar(2)
+  cidade_index      Int                 @default(0)
+  cidade_active     Boolean?            @default(dbgenerated("b'1'")) @db.Bit(1)
+  tbl_local_uf      tbl_local_uf?       @relation(fields: [uf_id], references: [uf_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_cidadeXuf")
+  tbl_local_bairros tbl_local_bairros[]
+
+  @@index([uf_id], map: "FK_cidadeXuf_idx")
+  @@index([cidade_descricao], map: "nome asc")
+  @@index([cidade_descricao], map: "nome desc")
+}
+
+model tbl_local_ruas {
+  log_id                   Int                @id @default(0)
+  bairro_id                Int?
+  log_cep                  String?            @db.VarChar(9)
+  log_descricao            String?            @db.VarChar(72)
+  log_endereco_complemento String?            @db.VarChar(72)
+  log_active               Boolean?           @default(dbgenerated("b'1'")) @db.Bit(1)
+  tbl_local_bairros        tbl_local_bairros? @relation(fields: [bairro_id], references: [bairro_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_logXbairros")
+  tbl_business             tbl_business[]
+
+  @@index([bairro_id], map: "FK_logXbairros_idx")
+  @@index([log_cep], map: "Index_1")
+}
+
+model tbl_local_uf {
+  uf_id             Int                 @id @default(0) @db.UnsignedInt
+  uf_sigla          String?             @db.Char(2)
+  uf_descricao      String?             @db.VarChar(72)
+  ativo             Int                 @db.UnsignedInt
+  tbl_local_cidades tbl_local_cidades[]
+}
+
+model tbl_tags {
+  tag_id              Int                   @id @default(autoincrement())
+  tag_name            String                @db.VarChar(115)
+  tag_active          Boolean               @default(dbgenerated("b'1'")) @db.Bit(1)
+  tbl_business_x_tags tbl_business_x_tags[]
+}
