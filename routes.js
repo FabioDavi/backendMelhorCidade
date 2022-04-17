@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.router = void 0;
+const express_1 = require("express");
+const FindLocalCidadesController_1 = require("./controllers/FindLocalCidadesController");
+const LocalCidadesController_1 = require("./controllers/LocalCidadesController");
+const router = (0, express_1.Router)();
+exports.router = router;
+const findCidade = new FindLocalCidadesController_1.FindCidadesController();
+const findCidades2 = new LocalCidadesController_1.CidadeController();
+router.get("/cidades/:cidade_descricao", findCidade.handle);
+router.get("/cidadesPorNome/:cidade_descricao", findCidades2.buscaCidades2);
